@@ -1,0 +1,56 @@
+# any outliers? -> check your JSON tree on auspice.us
+#very high diversity (genotype A)
+OQ607171
+JQ746659
+EU812514
+JQ315094
+
+#CVA10 (wrong organism label in GenBank)
+LT617118
+LT617117
+LT617116
+
+# high divergence
+AB465366
+KU163608
+OQ626408
+OL470926
+
+# swine vesicular disease virus SVDV-specific sequence
+S79977
+
+# mouse
+MG586908
+MG586907
+MG586906
+MG586905
+KC695830
+OP651899
+LC506515 #Lab/Model-adapted strains / Wrongly classified in NCBI
+LC506516 #Lab/Model-adapted strains / Wrongly classified in NCBI
+MF990300 #Pool of samples
+MT241239 #Lab/Model-adapted strains / Wrongly classified in NCBI
+OP651899 #Lab/Model-adapted strains
+
+# low diversity
+PV611645
+
+#vaccine patents
+MB001410
+LQ705800
+
+
+#clockor - high divergence
+MH084330
+MH084331
+MH084305
+MH084306
+MH118027
+LT617109
+PX448977
+PX449038
+PX448985
+
+#clockor - low divergence
+LT617110
+PQ612461
