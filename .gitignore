@@ -28,3 +28,5 @@ results/*
 test_out/*
 out-dataset/*
 dataset.zip
+
+config.yaml

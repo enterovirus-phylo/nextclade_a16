@@ -26,10 +26,10 @@ COLORS_SCHEMES =        "resources/color_schemes.tsv"
 INFERRED_ANCESTOR =     "resources/inferred-root.fasta"
 REFERENCE_PATH =        "dataset/reference.fasta"
 GENBANK_PATH =          "dataset/reference.gbk"
-configfile: "config.yaml"
+
 
 FETCH_SEQUENCES = True
-STATIC_ANCESTRAL_INFERRENCE = True
+STATIC_ANCESTRAL_INFERRENCE = False
 
 onstart:
     if STATIC_ANCESTRAL_INFERRENCE and not config.get("static_inference_confirmed", False):

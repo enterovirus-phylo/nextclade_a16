@@ -1,6 +1,6 @@
-# Nextclade Workflow for &lt;your virus&gt;
+# Nextclade Workflow for Coxsackievirus A16
 
-This repository provides a robust, reproducible workflow for building a custom [Nextclade](https://github.com/nextstrain/nextclade) dataset for &lt;your virus&gt;. It enables you to generate reference and annotation files, download and process sequence data, infer an ancestral root, and create all files needed for Nextclade analyses and visualization.
+This repository provides a robust, reproducible workflow for building a custom [Nextclade](https://github.com/nextstrain/nextclade) dataset for Coxsackievirus A16. It enables you to generate reference and annotation files, download and process sequence data, infer an ancestral root, and create all files needed for Nextclade analyses and visualization.
 
 ---
 
@@ -38,7 +38,7 @@ This workflow includes several modular steps:
 Run the script to extract the reference FASTA and genome annotation from GenBank:
 
 ```bash
-python3 scripts/generate_from_genbank.py --reference "<accession_id>" --output-dir dataset/
+python3 scripts/generate_from_genbank.py --reference "U05876.1" --output-dir dataset/
 ```
 
 During execution, follow the prompts for CDS annotation selection.

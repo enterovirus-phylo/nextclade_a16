@@ -1,6 +1,6 @@
-# Inferred Ancestral Sequence for &lt;your virus&gt;
+# Inferred Ancestral Sequence for Coxsackievirus A16
 
-This repository provides a reproducible workflow for generating a static inferred ancestral ("root") sequence for &lt;your virus&gt;, designed for use as a custom reference in [Nextclade](https://clades.nextstrain.org/) analyses.
+This repository provides a reproducible workflow for generating a static inferred ancestral ("root") sequence for Coxsackievirus A16, designed for use as a custom reference in [Nextclade](https://clades.nextstrain.org/) analyses.
 
 
 ## Overview
