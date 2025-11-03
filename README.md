@@ -152,7 +152,7 @@ https://master.clades.nextstrain.org/?dataset-url=http://localhost:3000
 
 ## Author & Contact
 
-- Maintainers: Alejandra Gonzalez Sanchez, Nadia Neuner-Jehle, Emma B. Hodcroft ([hodcroftlab](https://github.com/hodcroftlab))
+- Maintainers: Alejandra González-Sánchez, Nadia Neuner-Jehle, Emma B. Hodcroft ([hodcroftlab](https://github.com/hodcroftlab))
 - For questions or suggestions, please [open an issue](https://github.com/enterovirus-phylo/dataset-template-inferred-root/issues/new) or email: eve-group[at]swisstph.ch
 
 ---

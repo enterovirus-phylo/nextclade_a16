@@ -10,26 +10,27 @@ ROOTING =               "mid_point"  # alternative root using outgroup, e.g. the
 ID_FIELD=               "accession" # either accession or strain, used for meta-id-column in augur
 
 # Set the paths
+SEQUENCES =             "data/sequences.fasta"
+METADATA =              "data/metadata.tsv"
+
 GFF_PATH =              "dataset/genome_annotation.gff3" 
 PATHOGEN_JSON =         "dataset/pathogen.json"
 README_PATH =           "dataset/README.md"
 CHANGELOG_PATH =        "dataset/CHANGELOG.md"
+REFERENCE_PATH =        "dataset/reference.fasta"
+
+GENBANK_PATH =          "resources/reference.gbk"
 AUSPICE_CONFIG =        "resources/auspice_config.json"
 EXCLUDE =               "resources/exclude.txt"
-SEQUENCES =             "data/sequences.fasta"
-METADATA =              "data/metadata.tsv"
 CLADES =                "resources/clades.tsv"
 ACCESSION_STRAIN =      "resources/accession_strain.tsv"
 INCLUDE_EXAMPLES =      "resources/include_examples.txt"
 COLORS =                "resources/colors.tsv"
 COLORS_SCHEMES =        "resources/color_schemes.tsv"
 INFERRED_ANCESTOR =     "resources/inferred-root.fasta"
-REFERENCE_PATH =        "dataset/reference.fasta"
-GENBANK_PATH =          "dataset/reference.gbk"
-
 
 FETCH_SEQUENCES = True
-STATIC_ANCESTRAL_INFERRENCE = False
+STATIC_ANCESTRAL_INFERRENCE = True
 
 onstart:
     if STATIC_ANCESTRAL_INFERRENCE and not config.get("static_inference_confirmed", False):

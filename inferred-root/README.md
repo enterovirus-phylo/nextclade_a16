@@ -58,5 +58,5 @@ A: Yes! For a ready-to-use template, see [enterovirus-phylo/dataset-template-inf
 
 ## Author & Contact
 
-- Maintainers: Alejandra Gonzalez Sanchez, Nadia Neuner-Jehle, and Emma B. Hodcroft ([hodcroftlab](https://github.com/hodcroftlab))
+- Maintainers: Alejandra González-Sánchez, Nadia Neuner-Jehle, and Emma B. Hodcroft ([hodcroftlab](https://github.com/hodcroftlab))
 - For questions or suggestions, please [open an issue](https://github.com/enterovirus-phylo/dataset-template-inferred-root/issues) or email: eve-group[at]swisstph.ch
