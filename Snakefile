@@ -543,7 +543,7 @@ rule mutLabels:
 rule clean:
     shell:
         """
-        rm ingest/data/* data/*
+        rm ingest/data/*.* data/*
         rm -r results/* out-dataset test_out dataset.zip tmp
         rm resources/inferred-root.fasta inferred-root/resources/inferred-root.fasta
         rm -r inferred-root/results/*

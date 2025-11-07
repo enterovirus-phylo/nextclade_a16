@@ -19,8 +19,7 @@ METADATA =              "../results/metadata.tsv"
 INCLUDE =               "../results/include.txt"
 INFERRED_ANCESTOR =     "resources/inferred-root.fasta"
 
-OUTGROUP = ["AF326750.2", "AY697461.1", "AY421769.1"] # EV-A14, EV-A91 and EV-A125
-# OUTGROUP = ["MT081371.1", "DQ201177.1", "MT081370.1"] # EV-D111, EV-D70 and EV-D94
+OUTGROUP = ["AF326750.2", "AY421761.1"] 
 # OUTGROUP = REFERENCE_ACCESSION
 
 rule all:
