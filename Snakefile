@@ -1,12 +1,12 @@
 # Set the parameters
-REFERENCE_ACCESSION =   "U05876.1"
+REFERENCE_ACCESSION =   "U05876"
 TAXON_ID =              31704
 GENES =                 ["VP4", "VP2", "VP3", "VP1", "2A", "2B", "2C", "3A", "3B", "3C", "3D"]
 ALLOWED_DIVERGENCE =    "1800" # was 
 MIN_DATE =              "1980-01-01"
 MIN_LENGTH =            "6000" # was 6000 for whole genome build on Nextstrain
 MAX_SEQS =              "1000" #TODO: set to 10000 for testing
-ROOTING =               "mid_point"  # alternative root using outgroup, e.g. the reference "AY426531.1"
+ROOTING =               "ancestral_sequence"  # mid_point, outgroup, reference, ancestral sequence
 ID_FIELD=               "accession" # either accession or strain, used for meta-id-column in augur
 
 # Set the paths
@@ -112,6 +112,21 @@ rule curate:
         rm metadata.tmp
         """
 
+rule add_reference_to_include:
+    """
+    Create an include file for augur filter
+    """
+    input:
+        "resources/include.txt",
+    output:
+        "results/include.txt",
+    shell:
+        """
+        cat {input} >> {output}
+        echo "{REFERENCE_ACCESSION}" >> {output}
+        echo ancestral_sequence >> {output}
+        """
+
 if STATIC_ANCESTRAL_INFERRENCE == True:
     rule static_inferrence:
         message:
@@ -126,8 +141,10 @@ if STATIC_ANCESTRAL_INFERRENCE == True:
             meta = rules.curate.output.metadata,
             seq = SEQUENCES,
             meta_ancestral = "resources/static_inferred_metadata.tsv", #TODO: create dummy metadata for ancestral sequence
+            include = "results/include.txt"
         params:
             strain_id_field = ID_FIELD,
+        threads: workflow.cores
         output:
             inref = INFERRED_ANCESTOR,
             seq = "results/sequences_with_ancestral.fasta",
@@ -137,7 +154,7 @@ if STATIC_ANCESTRAL_INFERRENCE == True:
             # Run the inferred-root snakefile
             echo "Running inferred-root workflow..."
             cd {input.dir} 
-            snakemake --cores 9 all
+            snakemake --cores {threads} all
             cd ../
 
             # Combine sequences (fixed the typo)
@@ -168,21 +185,6 @@ rule index_sequences:
         augur index \
             --sequences {input.sequences} \
             --output {output.sequence_index}
-        """
-
-rule add_reference_to_include:
-    """
-    Create an include file for augur filter
-    """
-    input:
-        "resources/include.txt",
-    output:
-        "results/include.txt",
-    shell:
-        """
-        cat {input} >> {output}
-        echo "{REFERENCE_ACCESSION}" >> {output}
-        echo ancestral_sequence >> {output}
         """
 
 rule filter:
@@ -572,8 +574,8 @@ rule mutLabels:
 rule clean:
     shell:
         """
-        rm -r results out-dataset test_out dataset.zip tmp
         rm ingest/data/* data/*
-        rm resources/inferred-root.fasta
-        rm -r inferred-root/results/* inferred-root/resources/*
+        rm -r results/* out-dataset test_out dataset.zip tmp
+        rm resources/inferred-root.fasta inferred-root/resources/inferred-root.fasta
+        rm -r inferred-root/results/*
         """
