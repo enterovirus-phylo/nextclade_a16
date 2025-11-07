@@ -31,38 +31,7 @@ INFERRED_ANCESTOR =     "resources/inferred-root.fasta"
 
 FETCH_SEQUENCES = True
 STATIC_ANCESTRAL_INFERRENCE = True
-
-onstart:
-    if STATIC_ANCESTRAL_INFERRENCE and not config.get("static_inference_confirmed", False):
-        print(f"""
-        ╔══════════════════════════════════════════════════════════════╗
-        ║                 ENTEROVIRUS ROOT INFERENCE                   ║
-        ║                                                              ║
-        ║  This workflow will infer an ancestral root sequence for     ║
-        ║  your enterovirus dataset and overwrite:                     ║
-        ║  • results/metadata.tsv                                      ║
-        ║  • {SEQUENCES}                                      ║
-        ║                                                              ║
-        ║  To confirm, restart with:                                   ║
-        ║  snakemake -c 9 all --config static_inference_confirmed=true ║
-        ╚══════════════════════════════════════════════════════════════╝
-        """)
-        sys.exit("Root inference requires confirmation. See message above.")
-
-onsuccess:
-    if STATIC_ANCESTRAL_INFERRENCE:
-        print(f"""
-        Enterovirus root inference completed successfully!
-        Updated files:
-           • {INFERRED_ANCESTOR} (ancestral sequence)
-           • results/metadata.tsv (merged metadata)
-           • {SEQUENCES} (combined sequences with ancestral root)
-        """)
-    else: print("Workflow finished, no ancestral root created.")
-
-onerror:
-    print("An error occurred. See detailed error message in terminal.")
-
+include: "scripts/workflow_messages.snkm"
 
 rule all:
     input:
