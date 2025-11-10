@@ -1,6 +1,6 @@
-# Inferred Ancestral Sequence for &lt;your virus&gt;
+# Inferred Ancestral Sequence for Coxsackievirus A16
 
-This repository provides a reproducible workflow for generating a static inferred ancestral ("root") sequence for &lt;your virus&gt;, designed for use as a custom reference in [Nextclade](https://clades.nextstrain.org/) analyses.
+This repository provides a reproducible workflow for generating a static inferred ancestral ("root") sequence for Coxsackievirus A16, designed for use as a custom reference in [Nextclade](https://clades.nextstrain.org/) analyses.
 
 
 ## Overview
@@ -58,5 +58,5 @@ A: Yes! For a ready-to-use template, see [enterovirus-phylo/dataset-template-inf
 
 ## Author & Contact
 
-- Maintainers: Nadia Neuner-Jehle, Alejandra Gonzalez Sanchez and Emma B. Hodcroft ([hodcroftlab](https://github.com/hodcroftlab))
+- Maintainers: Alejandra González-Sánchez, Nadia Neuner-Jehle, and Emma B. Hodcroft ([hodcroftlab](https://github.com/hodcroftlab))
 - For questions or suggestions, please [open an issue](https://github.com/enterovirus-phylo/dataset-template-inferred-root/issues) or email: eve-group[at]swisstph.ch

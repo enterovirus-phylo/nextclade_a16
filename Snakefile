@@ -3,65 +3,35 @@ REFERENCE_ACCESSION =   "U05876.1"
 TAXON_ID =              31704
 GENES =                 ["VP4", "VP2", "VP3", "VP1", "2A", "2B", "2C", "3A", "3B", "3C", "3D"]
 ALLOWED_DIVERGENCE =    "1800" # was 
-MIN_DATE =              "1990-01-01"
+MIN_DATE =              "1980-01-01"
 MIN_LENGTH =            "6000" # was 6000 for whole genome build on Nextstrain
 MAX_SEQS =              "1000" #TODO: set to 10000 for testing
 ROOTING =               "mid_point"  # alternative root using outgroup, e.g. the reference "AY426531.1"
 ID_FIELD=               "accession" # either accession or strain, used for meta-id-column in augur
 
 # Set the paths
+SEQUENCES =             "data/sequences.fasta"
+METADATA =              "data/metadata.tsv"
+
 GFF_PATH =              "dataset/genome_annotation.gff3" 
 PATHOGEN_JSON =         "dataset/pathogen.json"
 README_PATH =           "dataset/README.md"
 CHANGELOG_PATH =        "dataset/CHANGELOG.md"
+REFERENCE_PATH =        "dataset/reference.fasta"
+
+GENBANK_PATH =          "resources/reference.gbk"
 AUSPICE_CONFIG =        "resources/auspice_config.json"
 EXCLUDE =               "resources/exclude.txt"
-SEQUENCES =             "data/sequences.fasta"
-METADATA =              "data/metadata.tsv"
 CLADES =                "resources/clades.tsv"
 ACCESSION_STRAIN =      "resources/accession_strain.tsv"
 INCLUDE_EXAMPLES =      "resources/include_examples.txt"
 COLORS =                "resources/colors.tsv"
 COLORS_SCHEMES =        "resources/color_schemes.tsv"
 INFERRED_ANCESTOR =     "resources/inferred-root.fasta"
-REFERENCE_PATH =        "dataset/reference.fasta"
-GENBANK_PATH =          "dataset/reference.gbk"
-configfile: "config.yaml"
 
 FETCH_SEQUENCES = True
 STATIC_ANCESTRAL_INFERRENCE = True
-
-onstart:
-    if STATIC_ANCESTRAL_INFERRENCE and not config.get("static_inference_confirmed", False):
-        print(f"""
-        ╔══════════════════════════════════════════════════════════════╗
-        ║                 ENTEROVIRUS ROOT INFERENCE                   ║
-        ║                                                              ║
-        ║  This workflow will infer an ancestral root sequence for     ║
-        ║  your enterovirus dataset and overwrite:                     ║
-        ║  • results/metadata.tsv                                      ║
-        ║  • {SEQUENCES}                                      ║
-        ║                                                              ║
-        ║  To confirm, restart with:                                   ║
-        ║  snakemake -c 9 all --config static_inference_confirmed=true ║
-        ╚══════════════════════════════════════════════════════════════╝
-        """)
-        sys.exit("Root inference requires confirmation. See message above.")
-
-onsuccess:
-    if STATIC_ANCESTRAL_INFERRENCE:
-        print(f"""
-        Enterovirus root inference completed successfully!
-        Updated files:
-           • {INFERRED_ANCESTOR} (ancestral sequence)
-           • results/metadata.tsv (merged metadata)
-           • {SEQUENCES} (combined sequences with ancestral root)
-        """)
-    else: print("Workflow finished, no ancestral root created.")
-
-onerror:
-    print("An error occurred. See detailed error message in terminal.")
-
+include: "scripts/workflow_messages.snkm"
 
 rule all:
     input:

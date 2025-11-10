@@ -1,6 +1,6 @@
-# Nextclade Workflow for &lt;your virus&gt;
+# Nextclade Workflow for Coxsackievirus A16
 
-This repository provides a robust, reproducible workflow for building a custom [Nextclade](https://github.com/nextstrain/nextclade) dataset for &lt;your virus&gt;. It enables you to generate reference and annotation files, download and process sequence data, infer an ancestral root, and create all files needed for Nextclade analyses and visualization.
+This repository provides a robust, reproducible workflow for building a custom [Nextclade](https://github.com/nextstrain/nextclade) dataset for Coxsackievirus A16. It enables you to generate reference and annotation files, download and process sequence data, infer an ancestral sequence, and create all files needed for Nextclade analyses and visualization.
 
 ---
 
@@ -19,13 +19,13 @@ mkdir -p dataset data ingest resources results scripts
 This workflow includes several modular steps:
 
 1. **Reference Generation**  
-   Extracts reference and annotation files from GenBank.
+   Extracts relevant reference and annotation files from GenBank.
 2. **Dataset Ingest**  
    Downloads and processes sequences and metadata from NCBI Virus.
 3. **Phylogenetic Root Inference (optional)**  
-   Infers a dataset-specific ancestral root sequence to use as a reference in Nextclade, improving mutation and clade assignments.
+   Infers a dataset-specific ancestral sequence to use as a reference in Nextclade, improving mutation and clade assignments.
 4. **Augur Phylogenetics & Nextclade Preparation**  
-   Builds phylogenetic trees, prepares sequence alignments, and generates all required files for Nextclade and Auspice.
+   Builds trees, prepares multiple sequence alignments, and generates all files required for Nextclade and Auspice.
 5. **Visualization & Analysis**  
    Enables both command-line and web-based Nextclade analyses, including local dataset hosting.
 
@@ -38,10 +38,13 @@ This workflow includes several modular steps:
 Run the script to extract the reference FASTA and genome annotation from GenBank:
 
 ```bash
-python3 scripts/generate_from_genbank.py --reference "<accession_id>" --output-dir dataset/
+python3 scripts/generate_from_genbank.py --reference "AY421767.1" --output-dir dataset/
 ```
 
-During execution, follow the prompts for CDS annotation selection.
+During the script execution, follow the prompts for CDS annotation selection.
+   - `[0]`
+   - `[product]` or `[leave empty for manual choice]` to select proteins.
+   - `[2]`.
 
 **Outputs:**
 - `dataset/reference.fasta`
@@ -54,7 +57,6 @@ During execution, follow the prompts for CDS annotation selection.
 Edit `pathogen.json` to:
 - Reference your generated files (`reference.fasta`, `genome_annotation.gff3`)
 - Update metadata and QC settings as needed
-
 > [!WARNING]  
 > If QC is not set, Nextclade will skip quality checks.
 
@@ -93,35 +95,21 @@ See [ingest/README.md](ingest/README.md) for specifics.
 
 ---
 
-### Inferred Root (Optional but Recommended)
+### Inferred Ancestral Sequence (Optional but Recommended)
 
-The `inferred-root/` directory contains a reproducible pipeline to infer a dataset-specific ancestral root, which can be used as a reference sequence in Nextclade. This enhances mutation and clade call accuracy for your dataset.
+The `inferred-root/` directory contains a reproducible pipeline to infer a dataset-specific ancestral sequence, which can be used as a reference sequence in Nextclade. This enhances mutation and clade call accuracy for your dataset.
 
 - **See:** [`inferred-root/README.md`](inferred-root/README.md) for details.
-- To enable, set `ANCESTRAL_ROOT_INFERRENCE = True` in your config and run with  
-  `--config root_inference_confirmed=true`.
+- To enable, set `STATIC_ANCESTRAL_INFERRENCE = True` in your config and run with  
+  `--config static_inference_confirmed=true`.
 - Without confirmation, the workflow will halt and display an opt-in message.
 
 > [!NOTE]  
-> To skip the inferred root step, leave `ANCESTRAL_ROOT_INFERRENCE = False`.
+> To skip the inferred root step, leave `STATIC_ANCESTRAL_INFERRENCE = False`.
 
----
 
-### 5. Configure `auspice_config.json`
-
-Edit `resources/auspice_config.json` to:
-- Match the **RefSeq node** to your virus reference  
-- Update the **title**, **build_url**, and **maintainers**  
-
-This enables three reference options for mutation calling:  
-
-- **Reference** → RefSeq or commonly used reference sequence
-- **Static Ancestral Root** → Ancestral sequence from `inferred-root` workflow; run only once
-- **Tree root** → Tree-based root (changes with every re-run)  
-
-*Example reference selector UI:*
-
-![Options](./image.png)
+### **Template for other enteroviruses:**  
+If you want to apply this approach to other enterovirus types (e.g., EV-A71, CVA6), a [Nextclade Dataset Template for Inferred Ancestral Sequence](https://github.com/enterovirus-phylo/dataset-template-inferred-root) is available and recommended for reuse.
 
 ---
 
@@ -130,7 +118,7 @@ This enables three reference options for mutation calling:
 To generate the Auspice JSON and a Nextclade example dataset:
 
 ```bash
-snakemake --cores 9 all --config root_inference_confirmed=true
+snakemake --cores 9 all --config static_inference_confirmed=true
 ```
 
 This will:
@@ -164,7 +152,7 @@ https://master.clades.nextstrain.org/?dataset-url=http://localhost:3000
 
 ## Author & Contact
 
-- Maintainers: Nadia Neuner-Jehle, Alejandra Gonzalez Sanchez, Emma B. Hodcroft ([hodcroftlab](https://github.com/hodcroftlab))
+- Maintainers: Alejandra González-Sánchez, Nadia Neuner-Jehle, Emma B. Hodcroft ([hodcroftlab](https://github.com/hodcroftlab))
 - For questions or suggestions, please [open an issue](https://github.com/enterovirus-phylo/dataset-template-inferred-root/issues/new) or email: eve-group[at]swisstph.ch
 
 ---
@@ -173,7 +161,8 @@ https://master.clades.nextstrain.org/?dataset-url=http://localhost:3000
 
 - For issues, see the [official Nextclade documentation](https://docs.nextstrain.org/projects/nextclade/en/stable/index.html#).
 - For details on the inferred root workflow, see [`inferred-root/README.md`](inferred-root/README.md).
+- For adapting to other enteroviruses, see the [dataset-template-inferred-root](https://github.com/enterovirus-phylo/dataset-template-inferred-root).
 
 ---
 
-This guide provides a structured, scalable approach to building and using high-quality Nextclade datasets for your specific Enterovirus — and can be adapted for other enterovirus types as well.
+This guide provides a structured, scalable approach to building and using high-quality Nextclade datasets for CVA16 — and can be adapted for other enterovirus types as well.

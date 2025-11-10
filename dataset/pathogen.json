@@ -1,4 +1,5 @@
 {
+  "$schema": "https://raw.githubusercontent.com/nextstrain/nextclade/refs/heads/release/packages/nextclade-schemas/input-pathogen-json.schema.json",
   "schemaVersion": "3.0.0",
   "files": {
     "reference": "reference.fasta",
@@ -10,7 +11,7 @@
     "changelog": "CHANGELOG.md"
   },
   "attributes": {
-    "name": "CV-A16",
+    "name": "Coxsackievirus A16",
     "reference name": "Coxsackievirus A16",
     "reference accession": "U05876.1"
   },
@@ -30,8 +31,12 @@
         "cli": "3.0.0-alpha.0",
         "web": "3.0.0-alpha.0"
     },
-  "qc": {
-    "frameShifts": {
+    "mutLabels": {
+      "nucMutLabelMap": {
+        }
+      },    
+    "qc": {
+      "frameShifts": {
       "enabled": true,
       "scoreWeight": 20
     },
