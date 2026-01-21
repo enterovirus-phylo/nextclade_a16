@@ -30,3 +30,6 @@ out-dataset/*
 dataset.zip
 
 config.yaml
+
+# outgroup
+inferred-root/resources/outgroup/*
