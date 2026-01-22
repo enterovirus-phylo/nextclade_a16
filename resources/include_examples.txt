@@ -1,3 +1,12 @@
+# bad
 AY421767
 PX448978
 PX449037
+
+# mediocre
+MW036460
+MW030432
+
+# Frameshift
+MG948605
+PX448850

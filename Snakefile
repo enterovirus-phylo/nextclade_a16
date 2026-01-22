@@ -552,7 +552,7 @@ rule subsample_example_sequences:
             --exclude {input.exclude} {input.outliers} \
             --exclude-ambiguous-dates-by year \
             --min-date 2000 --group-by clade \
-            --subsample-max-sequences 30  \
+            --subsample-max-sequences 100  \
             --probabilistic-sampling \
             --output-sequences {output.example_sequences}
         """
@@ -607,13 +607,13 @@ rule test:
 
 rule mutLabels:
     input:
-        table = "results/nextclade.tsv",
-        clade = "results/clades_metadata.tsv",
+        table = rules.align.output.tsv,
+        clade = rules.extract_clades_tsv.output.tsv,
         json = PATHOGEN_JSON,
     params:
         min_proportion = 0.2,
         high_threshold_proportion = 0.70,
-        clades_high_threshold = ["A1","A2/D","B1","B2","B3","C"],
+        clades_high_threshold = ["B1a","B1b","B1c"],
         clades_to_drop = ["unassigned"],
     output:
         clade_meta = "results/clades_mut_metadata.tsv",
