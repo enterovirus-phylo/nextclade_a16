@@ -547,12 +547,13 @@ rule subsample_example_sequences:
             --sequences {input.all_sequences} \
             --metadata {output.tmp} \
             --metadata-id-columns {params.strain_id_field} \
-            --min-length 4000 \
+            --min-length 3000 \
             --include {input.incl_examples} \
             --exclude {input.exclude} {input.outliers} \
             --exclude-ambiguous-dates-by year \
-            --min-date 2000 --group-by clade \
-            --subsample-max-sequences 100  \
+            --exclude-where clade=A clade=B2 clade=B \
+            --min-date 2005 --group-by clade \
+            --subsample-max-sequences 25  \
             --probabilistic-sampling \
             --output-sequences {output.example_sequences}
         """
@@ -612,13 +613,14 @@ rule mutLabels:
         json = PATHOGEN_JSON,
     params:
         min_proportion = 0.2,
-        high_threshold_proportion = 0.70,
+        high_threshold_proportion = 0.60,
         clades_high_threshold = ["B1a","B1b","B1c"],
         clades_to_drop = ["unassigned"],
     output:
         clade_meta = "results/clades_mut_metadata.tsv",
         properties = "results/virus_properties.json",
-        json = "out-dataset/pathogen.json"
+        json = "out-dataset/pathogen.json",
+        newly_relevant = "results/newly_relevant_mutations.tsv",
     shell:
         """
         augur merge \
@@ -632,7 +634,8 @@ rule mutLabels:
             --min-prop {params.min_proportion} \
             --high-min-prop {params.high_threshold_proportion} \
             --high-prop-clades "{params.clades_high_threshold}" \
-            --exclude-clades "{params.clades_to_drop}"
+            --exclude-clades "{params.clades_to_drop}" \
+            --newly-relevant-output {output.newly_relevant}
 
 
         jq --slurpfile v {output.properties} \

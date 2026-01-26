@@ -1,5 +1,6 @@
-# reference
-U05876
+#reference strain G-10
+U05876 
+E11655
 
 # any outliers? -> check your JSON tree on auspice.us
 #very high diversity (genotype A)
@@ -58,7 +59,13 @@ PX448985
 LT617110
 PQ612461
 
-# Xu. Q outliers
+JX839965
+
+# pulling  cluster up
+AB465367
+MN119286
+
+# Xu. Q outliers - recombinants
 PX449039
 PX448981
 PX448978
@@ -69,6 +76,6 @@ PX448965
 PX448985
 PX449037
 PX449038
-
-# genotype A (outlier)
-MK989714
+PX448971
+PX448966
+PX448973
