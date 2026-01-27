@@ -1,7 +1,7 @@
 clade	gene	site	alt
-A	nuc	730	C
-A	nuc	4023	G
-A	nuc	5895	A
+A	nuc	2415	T
+A	nuc	4200	A
+A	nuc	6939	T
 
 B	nuc	3081	A
 B2	nuc	5934	G
@@ -24,3 +24,7 @@ B1b	nuc	6318	C
 B1c	nuc	1956	T
 B1c	nuc	4266	T
 B1c	nuc	4695	T
+
+D	nuc	730	C
+D	nuc	4023	G
+D	nuc	5895	A

@@ -2,7 +2,7 @@
 REFERENCE_ACCESSION =   "U05876"
 TAXON_ID =              31704
 GENES =                 ["VP4", "VP2", "VP3", "VP1", "2A", "2B", "2C", "3A", "3B", "3C", "3D"]
-ALLOWED_DIVERGENCE =    "1600" # TODO: lower this threshold to exclude outliers
+ALLOWED_DIVERGENCE =    "1800" # TODO: lower this threshold to exclude outliers
 MIN_DATE =              "1990-01-01"
 MIN_LENGTH =            "6000" # is 6000 for whole genome build on Nextstrain
 MAX_SEQS =              "1200" #TODO: set to 10000 for testing
@@ -321,7 +321,7 @@ rule exclude:
         exclude = EXCLUDE,
         outliers = rules.get_outliers.output.outliers,
         example = INCLUDE_EXAMPLES,
-
+        include = rules.add_reference_to_include.output,
     params:
         strain_id_field = ID_FIELD,
     output:
@@ -336,6 +336,7 @@ rule exclude:
             --metadata {input.metadata} \
             --metadata-id-columns {params.strain_id_field} \
             --exclude {input.exclude} {input.outliers} {input.example} \
+            --include {input.include} \
             --output-sequences {output.filtered_sequences} \
             --output-metadata {output.filtered_metadata} \
             --output-strains {output.strains}
