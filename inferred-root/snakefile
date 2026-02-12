@@ -126,6 +126,7 @@ rule pick_ancestral_sequence:
     params:
         outgroup = OUTGROUP,
         reference = REFERENCE_ACCESSION,
+        include_reference = True, # whether to include the reference sequence in the "tree"; it will decrease the quality of the inferred ancestor if the reference is very different from the ingroup sequences
     output: 
         INFERRED_ANCESTOR
     shell: """
@@ -135,6 +136,7 @@ rule pick_ancestral_sequence:
             {input.sequences} \
             "{params.outgroup}"\
             {params.reference} \
+            {params.include_reference} \
             {output}
         """
 

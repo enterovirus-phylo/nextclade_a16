@@ -1,6 +1,6 @@
 import typer
 
-def main(tree_path: str, alignment: str, sequences: str, outgroup:str, reference:str, output: str):
+def main(tree_path: str, alignment: str, sequences: str, outgroup:str, reference:str,include_reference:bool, output: str):
 #%%
     from Bio import Phylo, Seq, SeqIO
     from treetime import TreeAnc
@@ -22,8 +22,12 @@ def main(tree_path: str, alignment: str, sequences: str, outgroup:str, reference
     #%%
     ingroup_terminals = []
     for terminal in tree.get_terminals():
-        if (terminal.name in sequences.keys()) and (terminal.name not in outgroup) and (terminal.name not in reference) and (terminal.name not in base_reference):
-           ingroup_terminals.append(terminal)
+        if include_reference:
+            if (terminal.name in sequences.keys()) and (terminal.name not in outgroup):
+                ingroup_terminals.append(terminal)
+        else:
+            if (terminal.name in sequences.keys()) and (terminal.name not in outgroup) and (terminal.name not in reference) and (terminal.name not in base_reference):
+                ingroup_terminals.append(terminal)
 
     ancestor_name = tt.tree.common_ancestor(ingroup_terminals).name
     
