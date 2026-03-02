@@ -1,24 +1,32 @@
 clade	gene	site	alt
-A	nuc	2415	T
-A	nuc	4200	A
-A	nuc	6939	T
+A	nuc	1353	G
+A	nuc	2976	T
+A	nuc	3954	G
+A	nuc	5796	T
 
-B	nuc	3081	A
-B2	nuc	5934	G
-B2	nuc	6606	C
-B2	nuc	7227	C
-B2	3D	255	D
+C	nuc	5934	G
+C	nuc	6606	C
+C	nuc	7227	C
+
+F	nuc	1701	C
+F	nuc	4137	A
+F	nuc	6703	A
+
+E	nuc	1644	T
+E	nuc	2706	A
+E	nuc	3813	A
+E	nuc	5739	T
 
 B1	nuc	1728	A
 B1	nuc	4765	G
 B1	nuc	7263	T
 
-B1a	nuc	4098	A
-B1a	nuc	4804	C
-B1a	nuc	7107	T
+B1a	clade	B1
+B1a	nuc	1656	T
+B1a	nuc	5466	C
 
-B1b	nuc	1746	T
-B1b	nuc	4947	G
+B1b	clade	B1
+B1b	nuc	4788	T
 B1b	nuc	6318	C
 
 B1c	nuc	1956	T
@@ -28,3 +36,7 @@ B1c	nuc	4695	T
 D	nuc	730	C
 D	nuc	4023	G
 D	nuc	5895	A
+
+recombinant	nuc	3900	A
+recombinant	nuc	5064	G
+recombinant	nuc	5850	A
