@@ -48,6 +48,14 @@ rule all:
         json = "out-dataset/pathogen.json",
         **({"root": INFERRED_ANCESTOR} if STATIC_ANCESTRAL_INFERRENCE else {})
 
+rule viz:
+    input: "results/auspice.json"
+    shell: "auspice view --datasetDir results"
+
+rule serve:
+    input: "out-dataset/pathogen.json","out-dataset/tree.json"
+    params: "out-dataset"
+    shell: "serve --cors {params} -l 3000"
 
 if FETCH_SEQUENCES == True:
     rule fetch:
@@ -272,7 +280,7 @@ rule align:
         --min-seed-cover {params.min_seed_cover} \
         --min-length {params.min_length} \
         --max-alignment-attempts 5 \
-        --include-reference false \
+        --include-reference true \
         --output-tsv {output.tsv} \
         --output-translations {params.translation_template} \
         --output-fasta {output.alignment} 
@@ -496,6 +504,7 @@ rule export:
             --auspice-config {input.auspice_config} \
             --color-by-metadata {params.fields} \
             --colors {input.colors} \
+            --include-root-sequence \
             --node-data {input.mutations} {input.branch_lengths} {input.clades} \
             --output {output.auspice}
         """
@@ -552,8 +561,8 @@ rule subsample_example_sequences:
             --include {input.incl_examples} \
             --exclude {input.exclude} {input.outliers} \
             --exclude-ambiguous-dates-by year \
-            --exclude-where clade=A clade=B2 clade=B \
-            --min-date 2005 --group-by clade \
+            --exclude-where clade=A clade=B2 clade=D clade=E\
+            --min-date 2015 --group-by clade \
             --subsample-max-sequences 25  \
             --probabilistic-sampling \
             --output-sequences {output.example_sequences}
