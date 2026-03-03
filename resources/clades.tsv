@@ -37,6 +37,6 @@ D	nuc	730	C
 D	nuc	4023	G
 D	nuc	5895	A
 
-recombinant	nuc	3900	A
-recombinant	nuc	5064	G
-recombinant	nuc	5850	A
+RFs	nuc	3900	A
+RFs	nuc	5064	G
+RFs	nuc	5850	A

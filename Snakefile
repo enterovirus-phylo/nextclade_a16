@@ -659,8 +659,9 @@ rule mutLabels:
 
 rule fragment_testing:
     input:
-        nextstrain = "testing/nextstrain_a16_vp1.tsv",
+        nextstrain = "testing/nextstrain_vp1_metadata.tsv",
         sequences = "results/aligned.fasta",
+        clades = "results/clades_metadata.tsv",
     output:
         fragments = "testing/CVA16_fragments.fasta"
     params:
@@ -677,13 +678,16 @@ rule fragment_testing:
         os.makedirs(os.path.dirname(output.fragments), exist_ok=True)
 
         # filter records in nextstrain file
-        ns_ids = list(pd.read_csv(input.nextstrain).accession)
+        ns_ids = list(pd.read_csv(input.nextstrain, sep="\t").accession)
         records = [r for r in records if r.id in ns_ids]
+
+        clade_map = pd.read_csv(input.clades, sep="\t").set_index("accession")["clade"].to_dict()
 
         with open(output.fragments, "w") as out_handle:
             for length in params.length:
                 record = random.choice(records)
                 seq_len = len(record.seq)
+                cl = clade_map.get(record.id, "NA")
                 if "VP1" in params.gene or "3D" in params.gene:
                     if "VP1" in params.gene: 
                         seq1 = record.seq[2389:3315]
@@ -691,7 +695,7 @@ rule fragment_testing:
                         if l > length:
                             s = random.randint(0, l - length)
                             seq1 = seq1[s:s+length]
-                            header = f"{record.id}_partial_{length}_VP1"
+                            header = f"{record.id}_partial_{length}_VP1_{cl}"
                             out_handle.write(f">{header}\n{seq1}\n")
                     if "3D" in params.gene:
                         seq2 = record.seq[5926:7296]
@@ -699,7 +703,7 @@ rule fragment_testing:
                         if l > length:
                             s = random.randint(0, l - length)
                             seq2 = seq2[s:s+length]
-                            header = f"{record.id}_partial_{length}_3D"
+                            header = f"{record.id}_partial_{length}_3D_{cl}"
                             out_handle.write(f">{header}\n{seq2}\n")
                 else: 
                     print(f"Gene {params.gene} not recognized.")
@@ -709,16 +713,16 @@ rule fragment_testing:
                     seq_len = len(record.seq)
                 start = random.randint(0, seq_len - length)
                 fragment_seq = record.seq[start:start+length]
-                header = f"{record.id}_partial_{length}"
+                header = f"{record.id}_partial_{length}_{cl}"
                 out_handle.write(f">{header}\n{fragment_seq}\n")
 
 
 rule recombinant_testing:
     input:
         sequences = SEQUENCES,
-        nextstrain = "testing/nextstrain_a16_vp1.tsv",
+        nextstrain = "testing/nextstrain_vp1_metadata.tsv",
         clades = "results/clades_metadata.tsv",
-        evA_seq = "testing/EV-A_sequence.fasta"
+        evA_seq = "testing/EV_A.fasta"
     output:
         recombinants = "testing/CVA16_recombinants.fasta"
     params:
@@ -748,7 +752,7 @@ rule recombinant_testing:
         clades = [c for c in clade2seqs if c != "NA" and len(clade2seqs[c]) > 0]
 
         # EV-A sequences for intertypic recombination
-        evd = eligible(list(SeqIO.parse(input.evD_seq, "fasta")), params.min_length)
+        evd = eligible(list(SeqIO.parse(input.evA_seq, "fasta")), params.min_length)
 
         with open(output.recombinants, "w") as out:
             # Intra-typic: between clades
@@ -767,7 +771,7 @@ rule recombinant_testing:
                 minlen = min(len(p1.seq), len(p2.seq))
                 if minlen < params.min_length: continue
                 x = random.randint(1, minlen-1)
-                out.write(f">inter_{p1.id}_a16_{x}_{p2.id}_D\n{p1.seq[:x]}{p2.seq[x:]}\n")
+                out.write(f">inter_{p1.id}_a16_{x}_{p2.id}_A\n{p1.seq[:x]}{p2.seq[x:]}\n")
 
 
 rule clean:
