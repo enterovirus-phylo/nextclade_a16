@@ -181,7 +181,7 @@ When you need to regenerate with new data or updated outgroups:
 
 ### Template for Other Enteroviruses
 
-If you want to apply this approach to other enterovirus types (e.g., EV-A71, CVA16), a [Nextclade Dataset Template for Inferred Root](https://github.com/enterovirus-phylo/dataset-template-inferred-root) is available and recommended for reuse.
+If you want to apply this approach to other enterovirus types (e.g., EV-A71, CVA16), a [Nextclade Dataset Template for Inferred Sequence](https://github.com/enterovirus-phylo/Nextclade-dataset-template) is available and recommended for reuse.
 
 ---
 
@@ -240,7 +240,7 @@ https://master.clades.nextstrain.org/?dataset-url=http://localhost:3000
 
 - For issues, see the [official Nextclade documentation](https://docs.nextstrain.org/projects/nextclade/en/stable/index.html#) or [open an issue](https://github.com/enterovirus-phylo/nextclade_a16/issues).
 - For details on the inferred root workflow, see [`inferred-root/README.md`](inferred-root/README.md).
-- For adapting to other enteroviruses, see the [dataset-template-inferred-root](https://github.com/enterovirus-phylo/dataset-template-inferred-root).
+- For adapting to other enteroviruses, see the [dataset-template-inferred-root](https://github.com/enterovirus-phylo/Nextclade-dataset-template).
 
 ---
 
@@ -255,10 +255,10 @@ This guide provides a structured, scalable approach to building and using high-q
 - [x] Create test dataset — small example demonstrating the full inferred-root workflow end-to-end
 - [ ] Validate clade assignment of fragmented sequences in Nextclade (`testing/`)
 - [ ] Ensure novel recombinants get assigned to the root → recombinant feature in testing; QC label
-- [ ] Review and validate CVA16 nomenclature, including robustness with recombinant sequences
+- [X] Review and validate CVA16 nomenclature, including robustness with recombinant sequences
 - [ ] Integrate epitope mutation information as tree coloring and/or display in the Nextclade results table
 - [ ] Document outgroup selection and validation — explain which enterovirus species are used as outgroups and phylogenetic justification
 - [ ] Add troubleshooting for INFERRENCE_RERUN — common errors when regenerating (missing outgroups, alignment failures, etc.)
 - [ ] Document when to regenerate inferred root — guidelines on how often to rerun with new data
 - [ ] Compare mutation profiles — quantify difference in mutation calls between G-10-rooted vs inferred-root datasets
-- [ ] Validate rooting stability — test sensitivity of inferred root to outgroup selection and subsampling
+- [X] Validate rooting stability — test sensitivity of inferred root to outgroup selection and subsampling
