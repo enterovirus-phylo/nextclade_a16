@@ -647,10 +647,8 @@ rule mutLabels:
             --exclude-clades "{params.clades_to_drop}" \
             --newly-relevant-output {output.newly_relevant}
 
-
         jq --slurpfile v {output.properties} \
-           '.mutLabels.nucMutLabelMap = $v[0].nucMutLabelMap |
-            .mutLabels.nucMutLabelMapReverse = $v[0].nucMutLabelMapReverse' \
+           '.mutLabels.nucMutLabelMap = $v[0].nucMutLabelMap' \
            {input.json} > {output.json}
 
         zip -rj dataset.zip  out-dataset/*
