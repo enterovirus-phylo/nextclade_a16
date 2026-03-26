@@ -599,22 +599,7 @@ rule assemble_dataset:
         cp {input.readme} {output.readme}
         cp {input.changelog} {output.changelog}
         zip -rj dataset.zip  out-dataset/*
-        """
-
-
-rule test:
-    input:
-        dataset = rules.assemble_dataset.output.dataset_zip,
-        sequences = rules.assemble_dataset.output.sequences,
-    output:
-        output = directory("test_out"),
-    shell:
-        """
-        nextclade3 run \
-            --input-dataset {input.dataset} \
-            --output-all {output.output} \
-            {input.sequences}
-        """
+        """ 
 
 rule mutLabels:
     input:
@@ -770,6 +755,41 @@ rule recombinant_testing:
                 if minlen < params.min_length: continue
                 x = random.randint(1, minlen-1)
                 out.write(f">inter_{p1.id}_a16_{x}_{p2.id}_A\n{p1.seq[:x]}{p2.seq[x:]}\n")
+
+
+rule test:
+    input:
+        dataset = rules.assemble_dataset.output.dataset_zip,
+        ex_sequences = rules.assemble_dataset.output.sequences,
+        sequences = SEQUENCES,
+        recombinants = "testing/CVA16_recombinants.fasta",
+        fragments = "testing/CVA16_fragments.fasta",
+        non_As = "testing/non-EV-A_sequence.fasta",
+        EV_As = "testing/EV_A.fasta"
+
+    output:
+        output = directory("test_out"),
+    log:
+        "testing/test.log"
+    shell:
+        """
+        nextclade3 run \
+            --input-dataset {input.dataset} \
+            --output-all {output.output} \
+            {input.sequences} \
+            2>&1 | tee {log}
+        
+        python scripts/parse_nextclade_log.py {log} {input.sequences} {output.output}/nextclade.tsv {output.output}
+
+        mafft --thread 9 --addfragments test_out/failed_sequences.fasta dataset/reference.fasta > test_out/failed_sequences_aligned.fasta
+        """   
+
+            #         {input.ex_sequences} \
+            # {input.recombinants} \
+            # {input.fragments} \
+            # {input.non_As} \
+            # {input.EV_As} \
+
 
 
 rule clean:

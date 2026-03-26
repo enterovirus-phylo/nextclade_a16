@@ -33,3 +33,7 @@ config.yaml
 
 # outgroup
 inferred-root/resources/outgroup/*
+
+# testing
+testing/test.log
+testing/nextstrain_vp1_metadata.tsv
