@@ -365,6 +365,4 @@ if __name__ == "__main__":
     df = pd.read_csv(tsv_file, sep='\t', low_memory=False)
     qc_status = dict(zip(df['seqName'], df['qc.overallStatus'].fillna('failed')))
 
-    print(qc_status)
-
     summarize_results(failed_seqs, coverage_vals, total_seqs, seq_lengths, qc_status, fasta_file, output_dir)
