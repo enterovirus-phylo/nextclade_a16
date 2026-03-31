@@ -640,157 +640,74 @@ rule mutLabels:
         """
 
 
-rule fragment_testing:
-    input:
-        nextstrain = "testing/nextstrain_vp1_metadata.tsv",
-        sequences = "results/aligned.fasta",
-        clades = "results/clades_metadata.tsv",
-    output:
-        fragments = "testing/CVA16_fragments.fasta"
-    params:
-        length = range(100, 3000, 100),  # lengths from 200 to 3000
-        gene = ["VP1", "3D"]  # genes to sample from; atm only VP1 and 3D supported
-    run:
-        import os
-        import random
-        from Bio import SeqIO
-        import pandas as pd
-
-        # Read all sequences from the input file
-        records = list(SeqIO.parse(input.sequences, "fasta"))
-        os.makedirs(os.path.dirname(output.fragments), exist_ok=True)
-
-        # filter records in nextstrain file
-        ns_ids = list(pd.read_csv(input.nextstrain, sep="\t").accession)
-        records = [r for r in records if r.id in ns_ids]
-
-        clade_map = pd.read_csv(input.clades, sep="\t").set_index("accession")["clade"].to_dict()
-
-        with open(output.fragments, "w") as out_handle:
-            for length in params.length:
-                record = random.choice(records)
-                seq_len = len(record.seq)
-                cl = clade_map.get(record.id, "NA")
-                if "VP1" in params.gene or "3D" in params.gene:
-                    if "VP1" in params.gene: 
-                        seq1 = record.seq[2389:3315]
-                        l = len(seq1) - seq1.count("-") - seq1.count("N")
-                        if l > length:
-                            s = random.randint(0, l - length)
-                            seq1 = seq1[s:s+length]
-                            header = f"{record.id}_partial_{length}_VP1_{cl}"
-                            out_handle.write(f">{header}\n{seq1}\n")
-                    if "3D" in params.gene:
-                        seq2 = record.seq[5926:7296]
-                        l = len(seq2)
-                        if l > length:
-                            s = random.randint(0, l - length)
-                            seq2 = seq2[s:s+length]
-                            header = f"{record.id}_partial_{length}_3D_{cl}"
-                            out_handle.write(f">{header}\n{seq2}\n")
-                else: 
-                    print(f"Gene {params.gene} not recognized.")
-                        
-                while seq_len < length:
-                    record = random.choice(records)
-                    seq_len = len(record.seq)
-                start = random.randint(0, seq_len - length)
-                fragment_seq = record.seq[start:start+length]
-                header = f"{record.id}_partial_{length}_{cl}"
-                out_handle.write(f">{header}\n{fragment_seq}\n")
-
-
-rule recombinant_testing:
-    input:
-        sequences = SEQUENCES,
-        nextstrain = "testing/nextstrain_vp1_metadata.tsv",
-        clades = "results/clades_metadata.tsv",
-        evA_seq = "testing/EV_A.fasta"
-    output:
-        recombinants = "testing/CVA16_recombinants.fasta"
-    params:
-        inter_recombinants = 10,
-        intra_recombinants = 10,
-        min_length = 3500,
-    run:
-        import random
-        from Bio import SeqIO
-        import pandas as pd
-
-        def eligible(records, ml):
-            return [r for r in records if len(r) >= ml]
-
-        # Load sequences and filter by Nextstrain IDs & min_length
-        seqs = list(SeqIO.parse(input.sequences, "fasta"))
-        ns_ids = list(pd.read_csv(input.nextstrain, sep="\t").accession)
-        
-        seqs = eligible([r for r in seqs if r.id in ns_ids], params.min_length)
-
-        # Map clade assignments
-        clade_map = pd.read_csv(input.clades, sep="\t").set_index("accession")["clade"].to_dict()
-        clade2seqs = {}
-        for r in seqs:
-            clade = clade_map.get(r.id, "NA")
-            clade2seqs.setdefault(clade, []).append(r)
-        clades = [c for c in clade2seqs if c != "NA" and len(clade2seqs[c]) > 0]
-
-        # EV-A sequences for intertypic recombination
-        evd = eligible(list(SeqIO.parse(input.evA_seq, "fasta")), params.min_length)
-
-        with open(output.recombinants, "w") as out:
-            # Intra-typic: between clades
-            for i in range(params.intra_recombinants):
-                c1, c2 = random.sample(clades, 2)
-                p1, p2 = random.choice(clade2seqs[c1]), random.choice(clade2seqs[c2])
-                minlen = min(len(p1.seq), len(p2.seq))
-                if minlen < params.min_length: continue
-                x = random.randint(1, minlen-1)
-                out.write(f">intra_{p1.id}_{c1}_{x}_{p2.id}_{c2}\n{p1.seq[:x]}{p2.seq[x:]}\n")
-
-            # Inter-typic: A16 x EV-A
-            for i in range(params.inter_recombinants):
-                p1 = random.choice(seqs)
-                p2 = random.choice(evd)
-                minlen = min(len(p1.seq), len(p2.seq))
-                if minlen < params.min_length: continue
-                x = random.randint(1, minlen-1)
-                out.write(f">inter_{p1.id}_a16_{x}_{p2.id}_A\n{p1.seq[:x]}{p2.seq[x:]}\n")
-
-
 rule test:
     input:
-        dataset = rules.assemble_dataset.output.dataset_zip,
-        ex_sequences = rules.assemble_dataset.output.sequences,
-        sequences = SEQUENCES,
-        recombinants = "testing/CVA16_recombinants.fasta",
-        fragments = "testing/CVA16_fragments.fasta",
-        non_As = "testing/non-EV-A_sequence.fasta",
-        EV_As = "testing/EV_A.fasta"
+        dataset = rules.assemble_dataset.output.dataset_zip,    # output dataset
+        sequences = SEQUENCES,                                  # NCBI sequences
+        ex_sequences = rules.assemble_dataset.output.sequences, # example sequences
+        metadata = "testing/nextstrain_vp1_metadata.tsv",       # metadata downloaded from Nextstrain, needed for accession id check
+        clades = rules.extract_clades_tsv.output.tsv,           # Table containing clades and accession
+        non_As = "testing/non-EV-A_sequence.fasta",             # List of some non-EV-A viruses
+        EV_As = "testing/EV_A.fasta" if os.path.exists("testing/EV_A.fasta") else [],   # or we do a Entrez with the taxonid
 
     output:
         output = directory("test_out"),
+    params:
+        do_alignment = "False",                                 # set to True to test the alignment of fragments (will run mafft on the fragments and reference)
+        seed = 42,                                              # random seed number
+        species_taxid = "138948",                               # EV-A taxonid
+        seedCover = config["alignmentParams"]["minSeedCover"],  # min-seed-match
+        virus = config["attributes"]["name"],                   # virus name
+        fragment_genes = ["VP1", "3D"]                          # currently only genes supported
     log:
         "testing/test.log"
     shell:
         """
+        mkdir -p {output.output}
+        
+        # Generate test sequences
+        python scripts/generate_test_sequences.py \
+            --sequences {input.sequences} \
+            --metadata {input.metadata} \
+            --clades {input.clades} \
+            --evA {input.EV_As} \
+            --taxid {params.species_taxid}\
+            --virus "{params.virus}"\
+            --output-fragments {output.output}/fragments.fasta \
+            --output-recombinants {output.output}/recombinants.fasta \
+            --output-evA {output.output}/EV_A_fetched.fasta \
+            --seed {params.seed}
+        
+        # Use provided EV_As if available, else use fetched
+        if [ -f "{input.EV_As}" ]; then
+            EV_A_FILE="{input.EV_As}"
+        else
+            EV_A_FILE="{output.output}/EV_A_fetched.fasta"
+        fi
+        
+        # Combine all test sequences
+        cat {input.sequences} {input.ex_sequences} \
+            {output.output}/fragments.fasta \
+            {output.output}/recombinants.fasta \
+            {input.non_As} \
+            "$EV_A_FILE" > {output.output}/all_test_sequences.fasta
+        
+        # Run Nextclade
         nextclade3 run \
             --input-dataset {input.dataset} \
             --output-all {output.output} \
-            {input.sequences} \
-            2>&1 | tee {log}
+            {output.output}/all_test_sequences.fasta \
+            2>&1 | tee -a {log}
         
-        python scripts/parse_nextclade_log.py {log} {input.sequences} {output.output}/nextclade.tsv {output.output}
+        # Parse results
+        echo "Running with min-seed-cover: {params.seedCover}" >> {log}
+        python scripts/parse_nextclade_log.py {log} {output.output}/all_test_sequences.fasta {output.output}/nextclade.tsv {output.output}
 
-        mafft --thread 9 --addfragments test_out/failed_sequences.fasta dataset/reference.fasta > test_out/failed_sequences_aligned.fasta
-        """   
-
-            #         {input.ex_sequences} \
-            # {input.recombinants} \
-            # {input.fragments} \
-            # {input.non_As} \
-            # {input.EV_As} \
-
-
+        # Optional: align failed sequences with MAFFT
+        if [ "{params.do_alignment}" = "True" ]; then
+            mafft --thread 9 --addfragments {output.output}/failed_sequences.fasta dataset/reference.fasta > {output.output}/failed_sequences_aligned.fasta
+        fi
+        """
 
 rule clean:
     shell:

@@ -82,6 +82,126 @@ def write_failed_sequences_fasta(failed_sequences, fasta_file, output_dir):
     SeqIO.write(failed_records, output_fasta, "fasta")
     print(f"Failed sequences written to: {output_fasta}\n")
 
+def categorize_test_sequences(failed_sequences, fasta_file, qc_status):
+    """
+    Categorize sequences into: CVA16, non-EV-A, fragments, inter-recombinants, intra-recombinants.
+    Returns failure counts and QC stats for each category.
+    """
+    categories = {
+        'CVA16': [],
+        'non_EV-A': [],
+        'fragments': [],
+        'inter_recombinants': [],
+        'intra_recombinants': []
+    }
+    
+    # Read all sequences and categorize them
+    all_seqs = {}
+    for record in SeqIO.parse(fasta_file, "fasta"):
+        all_seqs[record.id] = record.description
+    
+    for seq_id in all_seqs:
+        description = all_seqs[seq_id]
+
+        # Determine category based on sequence ID (check in order of specificity)
+        if seq_id.startswith('inter_'):  # Inter-recombinants first
+            categories['inter_recombinants'].append(seq_id)
+        elif seq_id.startswith('intra_'):  # Intra-recombinants
+            categories['intra_recombinants'].append(seq_id)
+        elif '_partial_' in seq_id:  # Fragments
+            categories['fragments'].append(seq_id)
+        elif '|' in description:  # Non-CVA16 (has pipe symbol)
+            categories['non_EV-A'].append(seq_id)
+        else:  # CVA16
+            categories['CVA16'].append(seq_id)
+    
+    # Count failures per category
+    results = {}
+    for cat_name, seq_list in categories.items():
+        failed_in_cat = [s for s in seq_list if s in failed_sequences]
+        qc_in_cat = [qc_status.get(s, 'unknown') for s in seq_list if s in qc_status]
+        
+        results[cat_name] = {
+            'total': len(seq_list),
+            'failed': len(failed_in_cat),
+            'passed': len(seq_list) - len(failed_in_cat),
+            'qc_stats': Counter(qc_in_cat),
+            'seq_ids': seq_list
+        }
+    
+    return results
+
+def print_test_summary(test_results, output_dir):
+    """
+    Print and save test sequence summary.
+    """
+    output_dir = Path(output_dir)
+    
+    print(f"\n{'='*70}")
+    print(f"TEST SEQUENCE SUMMARY")
+    print(f"{'='*70}")
+    print(f"{'Category':<20} {'Total':>8} {'Passed':>8} {'Failed':>8} {'Pass %':>10}")
+    print(f"-" * 70)
+    
+    table_path = output_dir / "test_sequences_summary.txt"
+    with open(table_path, 'w') as f:
+        f.write(f"{'Category':<20} {'Total':>8} {'Passed':>8} {'Failed':>8} {'Pass %':>10}\n")
+        f.write(f"-" * 70 + "\n")
+        
+        for cat_name, stats in test_results.items():
+            total = stats['total']
+            failed = stats['failed']
+            passed = stats['passed']
+            pass_pct = 100 * passed / total if total > 0 else 0
+            
+            print(f"{cat_name:<20} {total:>8} {passed:>8} {failed:>8} {pass_pct:>9.1f}%")
+            f.write(f"{cat_name:<20} {total:>8} {passed:>8} {failed:>8} {pass_pct:>9.1f}%\n")
+    
+    print(f"{'='*70}\n")
+    print(f"Test sequence summary saved to: {table_path}\n")
+    
+    return table_path
+
+def plot_test_qc_distribution(test_results, output_dir):
+    """
+    Create bar plot of QC status by test sequence category.
+    """
+    output_dir = Path(output_dir)
+    
+    statuses = ['good', 'mediocre', 'bad', 'failed']
+    categories = list(test_results.keys())
+    
+    # Prepare data for grouped bar chart
+    data_by_status = {status: [] for status in statuses}
+    for cat in categories:
+        qc_counter = test_results[cat]['qc_stats']
+        for status in statuses:
+            data_by_status[status].append(qc_counter.get(status, 0))
+    
+    # Create grouped bar chart
+    fig, ax = plt.subplots(figsize=(12, 6))
+    
+    x = range(len(categories))
+    width = 0.2
+    colors = ['green', 'orange', 'red', 'gray']
+    
+    for i, status in enumerate(statuses):
+        offset = (i - 1.5) * width
+        ax.bar([xi + offset for xi in x], data_by_status[status], width, label=status, color=colors[i], alpha=0.7, edgecolor='black')
+    
+    ax.set_xlabel('Sequence Category', fontsize=12)
+    ax.set_ylabel('Count', fontsize=12)
+    ax.set_title('QC Status Distribution by Test Sequence Category', fontsize=13)
+    ax.set_xticks(x)
+    ax.set_xticklabels(categories, rotation=15, ha='right')
+    ax.legend()
+    ax.grid(axis='y', alpha=0.3)
+    
+    plt.tight_layout()
+    plot_path = output_dir / "test_sequences_qc_distribution.png"
+    plt.savefig(plot_path, dpi=300, bbox_inches='tight')
+    print(f"Test QC distribution plot saved to: {plot_path}\n")
+
 def summarize_results(failed_sequences, coverage_pcts, total_sequences, seq_lengths, qc_status, fasta_file, output_dir):
     """
     Print summary stats and generate histograms.
@@ -140,6 +260,11 @@ def summarize_results(failed_sequences, coverage_pcts, total_sequences, seq_leng
         print(f"  {status:10}: {count:5} ({pct:5.1f}%)")
     
     print(f"{'='*60}\n")
+    
+    # Test sequence analysis
+    test_results = categorize_test_sequences(failed_sequences, fasta_file, qc_status)
+    print_test_summary(test_results, output_dir)
+    plot_test_qc_distribution(test_results, output_dir)
     
     # Write failed sequences to FASTA
     write_failed_sequences_fasta(failed_sequences, fasta_file, output_dir)
