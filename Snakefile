@@ -700,8 +700,9 @@ rule test:
             2>&1 | tee -a {log}
         
         # Parse results
-        python scripts/parse_nextclade_log.py {log} {output.output}/all_test_sequences.fasta {output.output}/nextclade.tsv {output.output}
-        echo "\nRunning with min-seed-cover: {params.seedCover}"
+        python scripts/parse_nextclade_log.py {log} {output.output}/all_test_sequences.fasta {output.output}/nextclade.tsv {output.output} {params.virus}
+        
+        echo "Running with min-seed-cover: {params.seedCover}"
 
         # Optional: align failed sequences with MAFFT
         if [ "{params.do_alignment}" = "True" ]; then

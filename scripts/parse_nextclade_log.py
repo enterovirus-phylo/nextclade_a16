@@ -87,7 +87,8 @@ def categorize_test_sequences(failed_sequences, fasta_file, qc_status):
         elif '_partial_' in seq_id:  # Fragments
             categories['fragments'].append(seq_id)
         elif 'EV-A' in description or 'CVA' in description:  # EV-A sequences (but not CVA16)
-            categories['EV_A'].append(seq_id)
+            if virus_name not in description:  
+                categories['EV_A'].append(seq_id)
         elif '|' in description:  # Non-CVA16 (has pipe symbol)
             categories['non_EV_A'].append(seq_id)
         else:  # CVA16
@@ -354,6 +355,7 @@ if __name__ == "__main__":
     fasta_file = sys.argv[2] if len(sys.argv) > 2 else "sequences.fasta"
     tsv_file = sys.argv[3] if len(sys.argv) > 3 else "test_out/nextclade.tsv"
     output_dir = sys.argv[4] if len(sys.argv) > 4 else "test_out"
+    virus_name = sys.argv[5] if len(sys.argv) > 5 else "CVA16"
     
     seq_lengths = {}
     for record in SeqIO.parse(fasta_file, "fasta"):
