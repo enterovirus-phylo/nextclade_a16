@@ -7,19 +7,6 @@ from collections import Counter
 import matplotlib.pyplot as plt
 from Bio import SeqIO
 
-def count_fasta_sequences(fasta_file):
-    """Count total sequences in FASTA file."""
-    return sum(1 for _ in SeqIO.parse(fasta_file, "fasta"))
-
-def get_seq_lengths(fasta_file):
-    """
-    Build dict of sequence ID -> length from FASTA file.
-    """
-    seq_lengths = {}
-    for record in SeqIO.parse(fasta_file, "fasta"):
-        seq_lengths[record.id] = len(record.seq)
-    return seq_lengths
-
 def parse_nextclade_log(log_file):
     """
     Extract failed sequence info and seed alignment percentages from Nextclade log.
@@ -38,10 +25,13 @@ def parse_nextclade_log(log_file):
         for line in f:
             # Extract sequence ID from warning lines
             if "[W]" in line and "Unable to align" in line:
-                # Pattern: "In sequence #XXXX 'SEQID'"
+                # Pattern: "In sequence #XXXX 'SEQID'" — extract just the ID before any space/pipe
                 seq_match = re.search(r"In sequence #\d+ '([^']+)'", line)
                 if seq_match:
-                    failed_sequences.append(seq_match.group(1))
+                    full_id = seq_match.group(1)
+                    # Take only the accession part before pipe/space
+                    clean_id = full_id.split()[0].split('|')[0]
+                    failed_sequences.append(clean_id)
             
             # Extract coverage percentage
             cov_match = re.search(coverage_pattern, line)
@@ -49,21 +39,6 @@ def parse_nextclade_log(log_file):
                 coverage_pcts.append(float(cov_match.group(1)))
     
     return failed_sequences, coverage_pcts
-
-def parse_nextclade_csv(tsv_file):
-    """
-    Read nextclade.tsv and extract QC overall status for all sequences.
-    Uses pandas for robust parsing.
-    
-    Returns:
-        qc_status (dict): seq_id -> qc.overallStatus
-    """
-    import pandas as pd
-    
-    df = pd.read_csv(tsv_file, sep='\t', low_memory=False)
-    qc_status = dict(zip(df['seqName'], df['qc.overallStatus'].fillna('failed')))
-    
-    return qc_status
 
 def write_failed_sequences_fasta(failed_sequences, fasta_file, output_dir):
     """
@@ -89,7 +64,8 @@ def categorize_test_sequences(failed_sequences, fasta_file, qc_status):
     """
     categories = {
         'CVA16': [],
-        'non_EV-A': [],
+        'non_EV_A': [],
+        'EV_A': [],
         'fragments': [],
         'inter_recombinants': [],
         'intra_recombinants': []
@@ -110,8 +86,10 @@ def categorize_test_sequences(failed_sequences, fasta_file, qc_status):
             categories['intra_recombinants'].append(seq_id)
         elif '_partial_' in seq_id:  # Fragments
             categories['fragments'].append(seq_id)
+        elif 'EV-A' in description or 'CVA' in description:  # EV-A sequences (but not CVA16)
+            categories['EV_A'].append(seq_id)
         elif '|' in description:  # Non-CVA16 (has pipe symbol)
-            categories['non_EV-A'].append(seq_id)
+            categories['non_EV_A'].append(seq_id)
         else:  # CVA16
             categories['CVA16'].append(seq_id)
     
@@ -119,7 +97,16 @@ def categorize_test_sequences(failed_sequences, fasta_file, qc_status):
     results = {}
     for cat_name, seq_list in categories.items():
         failed_in_cat = [s for s in seq_list if s in failed_sequences]
-        qc_in_cat = [qc_status.get(s, 'unknown') for s in seq_list if s in qc_status]
+        
+        # Get QC status by matching on description (since qc_status uses full description as key)
+        qc_in_cat = []
+        for seq_id in seq_list:
+            desc = all_seqs[seq_id]
+            # Try matching by id first, then by description
+            if seq_id in qc_status:
+                qc_in_cat.append(qc_status[seq_id])
+            elif desc in qc_status:
+                qc_in_cat.append(qc_status[desc])
         
         results[cat_name] = {
             'total': len(seq_list),
@@ -184,18 +171,40 @@ def plot_test_qc_distribution(test_results, output_dir):
     x = range(len(categories))
     width = 0.2
     colors = ['green', 'orange', 'red', 'gray']
-    
-    for i, status in enumerate(statuses):
-        offset = (i - 1.5) * width
-        ax.bar([xi + offset for xi in x], data_by_status[status], width, label=status, color=colors[i], alpha=0.7, edgecolor='black')
-    
+       
+    for xi, cat in enumerate(categories):
+        qc_counter = test_results[cat]['qc_stats']
+        
+        # Keep only statuses that actually have values
+        present_statuses = [s for s in statuses if qc_counter.get(s, 0) > 0]
+        n_present = len(present_statuses)
+        
+        for j, status in enumerate(present_statuses):
+            value = qc_counter.get(status, 0)
+            
+            # Recompute centered offsets per category
+            offset = (j - (n_present - 1) / 2) * width
+            
+            ax.bar(
+                xi + offset,
+                value,
+                width,
+                label=status if xi == 0 else "",  # avoid duplicate legend
+                color=colors[statuses.index(status)],
+                alpha=0.7,
+                edgecolor='black'
+            )   
+
     ax.set_xlabel('Sequence Category', fontsize=12)
-    ax.set_ylabel('Count', fontsize=12)
+    ax.set_ylabel('Log Scale of Number of Sequences', fontsize=12)
     ax.set_title('QC Status Distribution by Test Sequence Category', fontsize=13)
     ax.set_xticks(x)
     ax.set_xticklabels(categories, rotation=15, ha='right')
-    ax.legend()
+    handles, labels = ax.get_legend_handles_labels()
+    unique = dict(zip(labels, handles))
+    ax.legend(unique.values(), unique.keys())
     ax.grid(axis='y', alpha=0.3)
+    ax.set_yscale('log')
     
     plt.tight_layout()
     plot_path = output_dir / "test_sequences_qc_distribution.png"
@@ -339,13 +348,23 @@ def summarize_results(failed_sequences, coverage_pcts, total_sequences, seq_leng
 
 if __name__ == "__main__":
     import sys
+    import pandas as pd
+
     log_file = sys.argv[1] if len(sys.argv) > 1 else "test_out/test.log"
     fasta_file = sys.argv[2] if len(sys.argv) > 2 else "sequences.fasta"
     tsv_file = sys.argv[3] if len(sys.argv) > 3 else "test_out/nextclade.tsv"
     output_dir = sys.argv[4] if len(sys.argv) > 4 else "test_out"
     
-    total_seqs = count_fasta_sequences(fasta_file)
-    seq_lengths = get_seq_lengths(fasta_file)
+    seq_lengths = {}
+    for record in SeqIO.parse(fasta_file, "fasta"):
+        seq_lengths[record.id] = len(record.seq)
+    
+    total_seqs = len(seq_lengths)
     failed_seqs, coverage_vals = parse_nextclade_log(log_file)
-    qc_status = parse_nextclade_csv(tsv_file)
+
+    df = pd.read_csv(tsv_file, sep='\t', low_memory=False)
+    qc_status = dict(zip(df['seqName'], df['qc.overallStatus'].fillna('failed')))
+
+    print(qc_status)
+
     summarize_results(failed_seqs, coverage_vals, total_seqs, seq_lengths, qc_status, fasta_file, output_dir)
