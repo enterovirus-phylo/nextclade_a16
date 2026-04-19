@@ -21,3 +21,6 @@ PX448850
 ## recombinants
 PX448985
 PX448982
+
+#VP1
+KP751558

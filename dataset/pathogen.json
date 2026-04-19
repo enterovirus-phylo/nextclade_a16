@@ -12,8 +12,8 @@
   },
   "attributes": {
     "name": "Coxsackievirus A16",
-    "reference name": "Coxsackievirus A16 strain G-10",
-    "reference accession": "U05876.1"
+    "reference name": "Coxsackievirus A16 inferred ancestral sequence",
+    "reference accession": "ancestral_sequence"
   },
   "alignmentParams": {
     "penaltyGapOpen": 13,
@@ -25,7 +25,7 @@
     "minMatchLength": 30,
     "allowedMismatches": 15,
     "minLength": 100,
-    "minSeedCover": 0.85,
+    "minSeedCover": 0.80,
     "retryReverseComplement": true,
     "gapAlignmentSide": "left"
   },
@@ -56,8 +56,8 @@
     },
     "privateMutations": {
       "enabled": true,
-      "cutoff": 120,
-      "typical": 40,
+      "cutoff": 150,
+      "typical": 20,
       "weightLabeledSubstitutions": 1.5,
       "weightReversionSubstitutions": 2,
       "weightUnlabeledSubstitutions": 1

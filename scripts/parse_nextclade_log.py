@@ -6,6 +6,8 @@ from pathlib import Path
 from collections import Counter
 import matplotlib.pyplot as plt
 from Bio import SeqIO
+import json
+import numpy as np
 
 def parse_nextclade_log(log_file):
     """
@@ -50,7 +52,7 @@ def write_failed_sequences_fasta(failed_sequences, fasta_file, output_dir):
     # Read original FASTA and extract failed sequences
     failed_records = []
     for record in SeqIO.parse(fasta_file, "fasta"):
-        if record.id in failed_sequences:
+        if record.id in failed_sequences and "|" not in record.description and "int" not in record.id: # remove non-CVA16 sequences (otherwise alignment will not make sense)
             failed_records.append(record)   
     
     # Write to output file
@@ -87,7 +89,7 @@ def categorize_test_sequences(failed_sequences, fasta_file, qc_status):
         elif '_partial_' in seq_id:  # Fragments
             categories['fragments'].append(seq_id)
         elif 'EV-A' in description or 'CVA' in description:  # EV-A sequences (but not CVA16)
-            if virus_name not in description:  
+            if virus_name not in description and 'CVA16' not in description:
                 categories['EV_A'].append(seq_id)
         elif '|' in description:  # Non-CVA16 (has pipe symbol)
             categories['non_EV_A'].append(seq_id)
@@ -347,15 +349,68 @@ def summarize_results(failed_sequences, coverage_pcts, total_sequences, seq_leng
                 f.write(f"{status:11} | {count:5} | {pct:6.1f}%\n")
         print(f"QC status table saved to: {qc_table_path}\n")
 
+def extract_mutation_stats_from_tree(tree_file):
+    """
+    Extract private mutation statistics from phylogenetic tree JSON.
+    
+    Counts mutations on each branch (private mutations relative to parent node).
+    Mutations are stored in branch_attrs.mutations["nuc"] as a list of mutation strings.
+    
+    Returns:
+        typical (float): Median of mutations per branch
+        cutoff (float): 97th percentile of mutations per branch
+    """
+    
+    with open(tree_file) as f:
+        tree_data = json.load(f)
+    
+    # Extract mutation counts from all nodes
+    mutation_counts = []
+    
+    def traverse_tree(node):
+        # Count mutations on branch leading to this node
+        if 'branch_attrs' in node and 'mutations' in node['branch_attrs']:
+            branch_muts = node['branch_attrs']['mutations']
+            # Count only nucleotide mutations ("nuc" key)
+            nuc_muts = branch_muts.get('nuc', [])
+            count = len(nuc_muts) if isinstance(nuc_muts, list) else 0
+            mutation_counts.append(count)
+        
+        # Recursively traverse children
+        if 'children' in node:
+            for child in node['children']:
+                traverse_tree(child)
+    
+    # Start from tree root
+    if 'tree' in tree_data:
+        traverse_tree(tree_data['tree'])
+    
+    if not mutation_counts:
+        print("Warning: No mutations found in tree")
+        return None, None
+    
+    typical = float(np.percentile(mutation_counts, 50))  # median
+    cutoff = float(np.percentile(mutation_counts, 97))   # 97th percentile
+    
+    return typical, cutoff
+
 if __name__ == "__main__":
     import sys
     import pandas as pd
 
     log_file = sys.argv[1] if len(sys.argv) > 1 else "test_out/test.log"
-    fasta_file = sys.argv[2] if len(sys.argv) > 2 else "sequences.fasta"
+    fasta_file = sys.argv[2] if len(sys.argv) > 2 else "data/sequences.fasta"
     tsv_file = sys.argv[3] if len(sys.argv) > 3 else "test_out/nextclade.tsv"
     output_dir = sys.argv[4] if len(sys.argv) > 4 else "test_out"
     virus_name = sys.argv[5] if len(sys.argv) > 5 else "CVA16"
+    tree_file = sys.argv[6] if len(sys.argv) > 6 else "out-dataset/tree.json"
+
+    # Extract mutation statistics from tree
+    typical, cutoff = extract_mutation_stats_from_tree(tree_file)
+    if typical is not None and cutoff is not None:
+        print(f"\nPrivate Mutations Statistics from Tree:")
+        print(f"  Typical (median): {typical:.1f}")
+        print(f"  Cutoff (97th percentile): {cutoff:.1f}\n")
     
     seq_lengths = {}
     for record in SeqIO.parse(fasta_file, "fasta"):

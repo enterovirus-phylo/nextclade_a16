@@ -17,7 +17,7 @@ GFF_PATH =              "dataset/genome_annotation.gff3"
 PATHOGEN_JSON =         "dataset/pathogen.json"
 README_PATH =           "dataset/README.md"
 CHANGELOG_PATH =        "dataset/CHANGELOG.md"
-REFERENCE_PATH =        "dataset/reference.fasta"
+REFERENCE_PATH =        "resources/inferred-root.fasta"
 
 GENBANK_PATH =          "resources/reference.gbk"
 AUSPICE_CONFIG =        "resources/auspice_config.json"
@@ -53,7 +53,7 @@ rule viz:
     shell: "auspice view --datasetDir results"
 
 rule serve:
-    input: "out-dataset/pathogen.json","out-dataset/tree.json"
+    input: "out-dataset/pathogen.json","out-dataset/tree.json", "results/virus_properties.json"
     params: "out-dataset"
     shell: "serve --cors {params} -l 3000"
 
@@ -109,8 +109,9 @@ rule add_reference_to_include:
         """
         cat {input} >> {output}
         echo "{REFERENCE_ACCESSION}" >> {output}
-        echo ancestral_sequence >> {output}
+        
         """
+        #echo ancestral_sequence >> {output}
 
 if STATIC_ANCESTRAL_INFERRENCE and INFERRENCE_RERUN:
     rule static_inferrence:
@@ -407,13 +408,13 @@ rule ancestral:
             --tree {input.tree} \
             --alignment {input.alignment} \
             --annotation {input.annotation} \
-            --root-sequence {input.annotation} \
             --genes {params.genes} \
             --translations {params.translation_template} \
             --output-node-data {output.node_data} \
             --output-translations {params.output_translation_template}\
             --output-sequences {output.ancestral_sequences}
-        """
+        """#            --root-sequence {input.annotation} \
+
 
 
 rule clades:
@@ -649,7 +650,8 @@ rule test:
         clades = rules.extract_clades_tsv.output.tsv,           # Table containing clades and accession
         non_As = "testing/non-EV-A_sequence.fasta",             # List of some non-EV-A viruses
         EV_As = "testing/EV_A.fasta" if os.path.exists("testing/EV_A.fasta") else [],   # or we do a Entrez with the taxonid
-
+        reference = REFERENCE_PATH,
+        tree = "out-dataset/tree.json"
     output:
         output = directory("test_out"),
     params:
@@ -660,7 +662,7 @@ rule test:
         virus = config["attributes"]["name"],                   # virus name
         fragment_genes = ["VP1", "3D"]                          # currently only genes supported
     log:
-        "testing/test.log"
+        "test_out/test.log"
     shell:
         """
         mkdir -p {output.output}
@@ -693,20 +695,20 @@ rule test:
             "$EV_A_FILE" > {output.output}/all_test_sequences.fasta
         
         # Run Nextclade
-        nextclade3 run \
+        time nextclade3 run \
             --input-dataset {input.dataset} \
             --output-all {output.output} \
             {output.output}/all_test_sequences.fasta \
             2>&1 | tee -a {log}
         
         # Parse results
-        python scripts/parse_nextclade_log.py {log} {output.output}/all_test_sequences.fasta {output.output}/nextclade.tsv {output.output} {params.virus}
+        python scripts/parse_nextclade_log.py {log} {output.output}/all_test_sequences.fasta {output.output}/nextclade.tsv {output.output} "{params.virus}" {input.tree}
         
         echo "Running with min-seed-cover: {params.seedCover}"
 
         # Optional: align failed sequences with MAFFT
         if [ "{params.do_alignment}" = "True" ]; then
-            mafft --thread 9 --addfragments {output.output}/failed_sequences.fasta dataset/reference.fasta > {output.output}/failed_sequences_aligned.fasta
+            mafft --thread 9 --addfragments {output.output}/failed_sequences.fasta {input.reference} > {output.output}/failed_sequences_aligned.fasta
         fi
         """
 
