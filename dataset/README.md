@@ -1,4 +1,4 @@
-# Coxsackievirus A16 dataset based on reference "G-10"
+# Coxsackievirus A16 dataset
 
 | Key                  | Value                                                                 |
 |----------------------|-----------------------------------------------------------------------|
