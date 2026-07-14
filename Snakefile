@@ -75,26 +75,20 @@ if FETCH_SEQUENCES == True:
 rule curate:
     message:
         """
-        Cleaning up metadata with augur merge & augur curate
+        Cleaning up metadata with augur curate
         """
     input:
         meta = METADATA,  # Path to input metadata file
-        strains = ACCESSION_STRAIN  # Strain - accession lookup table
     params:
         strain_id_field = ID_FIELD,
     output:
         metadata = "results/metadata.tsv",  # Final output file for publications metadata
     shell:
         """
-        augur merge --metadata metadata={input.meta} strains={input.strains}\
-            --metadata-id-columns {params.strain_id_field} \
-            --output-metadata metadata.tmp
         augur curate normalize-strings \
-            --metadata metadata.tmp \
+            --metadata {input.meta} \
             --id-column {params.strain_id_field} \
             --output-metadata {output.metadata}
-
-        rm metadata.tmp
         """
 
 rule add_reference_to_include:
@@ -660,7 +654,8 @@ rule test:
         species_taxid = "138948",                               # EV-A taxonid
         seedCover = config["alignmentParams"]["minSeedCover"],  # min-seed-match
         virus = config["attributes"]["name"],                   # virus name
-        fragment_genes = ["VP1", "3D"]                          # currently only genes supported
+        fragment_genes = ["VP1", "3D"],                          # currently only genes supported
+        abbrev = "CVA16",
     log:
         "test_out/test.log"
     shell:
@@ -702,7 +697,9 @@ rule test:
             2>&1 | tee -a {log}
         
         # Parse results
-        python scripts/parse_nextclade_log.py {log} {output.output}/all_test_sequences.fasta {output.output}/nextclade.tsv {output.output} "{params.virus}" {input.tree}
+        python scripts/parse_nextclade_log.py {log} {output.output}/all_test_sequences.fasta \
+            {output.output}/nextclade.tsv {output.output} "{params.virus}" {input.tree} \
+            {params.abbrev}
         
         echo "Running with min-seed-cover: {params.seedCover}"
 
