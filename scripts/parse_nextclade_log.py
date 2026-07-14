@@ -52,7 +52,7 @@ def write_failed_sequences_fasta(failed_sequences, fasta_file, output_dir):
     # Read original FASTA and extract failed sequences
     failed_records = []
     for record in SeqIO.parse(fasta_file, "fasta"):
-        if record.id in failed_sequences and "|" not in record.description and "int" not in record.id: # remove non-CVA16 sequences (otherwise alignment will not make sense)
+        if record.id in failed_sequences and "|" not in record.description and "int" not in record.id: # remove non-EV sequences (otherwise alignment will not make sense)
             failed_records.append(record)   
     
     # Write to output file
@@ -61,11 +61,11 @@ def write_failed_sequences_fasta(failed_sequences, fasta_file, output_dir):
 
 def categorize_test_sequences(failed_sequences, fasta_file, qc_status):
     """
-    Categorize sequences into: CVA16, non-EV-A, fragments, inter-recombinants, intra-recombinants.
+    Categorize sequences into: EV, non-EV-A, fragments, inter-recombinants, intra-recombinants.
     Returns failure counts and QC stats for each category.
     """
     categories = {
-        'CVA16': [],
+        short_name: [],
         'non_EV_A': [],
         'EV_A': [],
         'fragments': [],
@@ -88,13 +88,13 @@ def categorize_test_sequences(failed_sequences, fasta_file, qc_status):
             categories['intra_recombinants'].append(seq_id)
         elif '_partial_' in seq_id:  # Fragments
             categories['fragments'].append(seq_id)
-        elif 'EV-A' in description or 'CVA' in description:  # EV-A sequences (but not CVA16)
-            if virus_name not in description and 'CVA16' not in description:
+        elif 'EV-A' in description or 'CVA' in description:  # EV-A sequences (but not EV)
+            if virus_name not in description and short_name not in description:
                 categories['EV_A'].append(seq_id)
-        elif '|' in description:  # Non-CVA16 (has pipe symbol)
+        elif '|' in description:  # Non-EV (has pipe symbol)
             categories['non_EV_A'].append(seq_id)
-        else:  # CVA16
-            categories['CVA16'].append(seq_id)
+        else:  # EV
+            categories[short_name].append(seq_id)
     
     # Count failures per category
     results = {}
@@ -402,8 +402,9 @@ if __name__ == "__main__":
     fasta_file = sys.argv[2] if len(sys.argv) > 2 else "data/sequences.fasta"
     tsv_file = sys.argv[3] if len(sys.argv) > 3 else "test_out/nextclade.tsv"
     output_dir = sys.argv[4] if len(sys.argv) > 4 else "test_out"
-    virus_name = sys.argv[5] if len(sys.argv) > 5 else "CVA16"
+    virus_name = sys.argv[5] if len(sys.argv) > 5 else "Enterovirus"
     tree_file = sys.argv[6] if len(sys.argv) > 6 else "out-dataset/tree.json"
+    short_name = sys.argv[7] if len(sys.argv) > 7 else "EV"
 
     # Extract mutation statistics from tree
     typical, cutoff = extract_mutation_stats_from_tree(tree_file)

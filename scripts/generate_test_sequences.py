@@ -225,7 +225,7 @@ def generate_recombinants(sequences_file, metadata, clades_file, evA_file,
         recomb_seq = str(p1.seq[:breakpoint]) + str(p2.seq[breakpoint:])
         recombinants.append((header, recomb_seq))
     
-    # Inter-typic recombinants (CVA16 x EV-A)
+    # Inter-typic recombinants (e.g., virus x EV-A)
     for j in range(inter_count):
         p1 = random.choice(seqs)
         p2 = random.choice(evA_seqs)
@@ -255,7 +255,7 @@ if __name__ == "__main__":
     parser.add_argument("--seed", type=int, default=42, help="Random seed")
     parser.add_argument("--evA", required=False, help="EV-A sequences file (skip Entrez if provided)")
     parser.add_argument("--taxid", type=str, required=False, help="NCBI Taxon ID for EV-A (if not provided as file)")
-    parser.add_argument("--virus", type=str, required=False, default="CVA16", help="Name of dataset virus to exclude from Entrez fetch")
+    parser.add_argument("--virus", type=str, required=False, default="EV", help="Name of dataset virus to exclude from Entrez fetch")
     parser.add_argument("--genes", required=False, nargs='+', default=None, help="Genes for which fragments are created")
     parser.add_argument("--email", required=False, help="Email for NCBI Entrez access")
     
