@@ -225,11 +225,12 @@ rule filter:
             {params.min_date} \
             --include {input.include} \
             --group-by {params.categories} \
-            --exclude-where full_authors="Xu,Q." \
             --subsample-max-sequences {params.max_seqs} \
             --output-sequences {output.filtered_sequences} \
             --output-metadata {output.filtered_metadata}
         """
+        #             --exclude-where full_authors="Xu,Q." \
+
 
 rule align:
     message:
