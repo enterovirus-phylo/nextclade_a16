@@ -395,6 +395,7 @@ rule ancestral:
         tree=rules.refine.output.tree,
         alignment=rules.exclude.output.filtered_sequences,
         annotation=GENBANK_PATH,
+        ref = REFERENCE_PATH,
     output:
         node_data="results/muts.json",
         ancestral_sequences="results/ancestral_sequences.fasta",
@@ -411,10 +412,10 @@ rule ancestral:
             --genes {params.genes} \
             --translations {params.translation_template} \
             --output-node-data {output.node_data} \
+            --root-sequence {input.ref} \
             --output-translations {params.output_translation_template}\
             --output-sequences {output.ancestral_sequences}
-        """#            --root-sequence {input.annotation} \
-
+        """
 
 
 rule clades:
