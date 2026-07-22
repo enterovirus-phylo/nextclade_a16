@@ -35,7 +35,7 @@
     "web": "3.0.0"
   },
   "mutLabels": {
-  "nucMutLabelMap": {
+    "nucMutLabelMap": {
     }
   },
   "qc": {
@@ -69,9 +69,19 @@
       "windowSize": 100,
       "clusterCutOff": 4,
       "scoreWeight": 25
-  }
-},
+    }
+  },
   "cdsOrderPreference": [
-    "VP4","VP2","VP3","VP1","2A","2B","2C","3A","3B","3C","3D"
+    "VP4",
+    "VP2",
+    "VP3",
+    "VP1",
+    "2A",
+    "2B",
+    "2C",
+    "3A",
+    "3B",
+    "3C",
+    "3D"
   ]
 }

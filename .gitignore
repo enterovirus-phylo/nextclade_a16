@@ -37,3 +37,4 @@ inferred-root/resources/outgroup/*
 # testing
 testing/test.log
 testing/nextstrain_vp1_metadata.tsv
+scripts/enterovirus_A_genome_counts.ipynb
