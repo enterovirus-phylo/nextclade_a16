@@ -358,8 +358,15 @@ rule exclude:
             --exclude {input.exclude} {input.outliers} {input.example} \
             --include {input.include} \
             --output-sequences {output.filtered_sequences} \
-            --output-metadata {output.filtered_metadata} \
+            --output-metadata tmp.o \
             --output-strains {output.strains}
+
+        csvtk mutate2 -t \
+          -n url \
+          -e '"https://www.ncbi.nlm.nih.gov/nuccore/" + ${params.strain_id_field:q}' \
+          tmp.o > {output.filtered_metadata:q}
+          
+        rm tmp.o          
         """
 
 
