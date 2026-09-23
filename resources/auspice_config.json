@@ -18,7 +18,8 @@
     "extensions": {
     "nextclade": {
       "ref_nodes": {
-        "default": "__root__",
+        "default": "Prototype",
+        "order": { "entries": ["Prototype"] },
         "builtins": {
           "__root__": {
             "displayName": "Static Inferred Ancestor",
