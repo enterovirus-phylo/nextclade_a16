@@ -40,3 +40,4 @@ testing/nextstrain_vp1_metadata.tsv
 scripts/enterovirus_A_genome_counts.ipynb
 testing/missing_RIVM.fasta
 testing/extract_fasta_from_accession.ipynb
+dag.png
