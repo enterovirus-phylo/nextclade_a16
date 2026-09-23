@@ -626,6 +626,7 @@ rule mutLabels:
         table = rules.align.output.tsv,
         clade = rules.extract_clades_tsv.output.tsv,
         json = PATHOGEN_JSON,
+	    dataset = "dataset.zip",
     params:
         min_proportion = 0.2,
         high_threshold_proportion = 0.60,
@@ -670,7 +671,8 @@ rule test:
         non_targets = NON_TARGET_SEQUENCES,                      # sequences from other species (negative controls)
         related_species = RELATED_SPECIES_FASTA if os.path.exists(RELATED_SPECIES_FASTA) else [],  # or we do a Entrez with the taxonid
         reference = REFERENCE_PATH,
-        tree = "out-dataset/tree.json"
+        tree = "out-dataset/tree.json",
+        properties = "results/virus_properties.json",
     output:
         output = directory("test_out"),
     params:
@@ -710,8 +712,12 @@ rule test:
             RELATED_FILE="{output.output}/related_species_fetched.fasta"
         fi
 
+        # Filter input sequences to >100 nt, then randomly subsample to 10,000
+        seqkit seq -m 101 {input.sequences} \
+            | seqkit sample -n 5000 -s {params.seed} > {output.output}/sequences_subset.fasta
+
         # Combine all test sequences
-        cat {input.sequences} \
+        cat {output.output}/sequences_subset.fasta \
             {output.output}/fragments.fasta \
             {output.output}/recombinants.fasta \
             {input.non_targets} \
